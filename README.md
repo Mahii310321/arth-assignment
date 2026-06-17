@@ -70,8 +70,8 @@ http://localhost:5173
 
 ## Current Phase
 
-Phase 1 is complete: monorepo setup, React/Vite frontend, Tailwind CSS, shadcn/ui-compatible base, Express backend, health endpoint, frontend health check, and environment examples.
+Phase 2 UI has been upgraded with the Lovable reference: responsive dashboard shell, sidebar navigation, expense chart, transactions, spend statistics, tips card, mock login/register modal, persistent mock login state, and dark mode toggle.
 
 ## Future Phases
 
-PostgreSQL, Prisma, authentication, dashboard APIs, CSV export, dark mode, and tests will be implemented in later phases.
+Backend authentication, PostgreSQL, Prisma, dashboard APIs, CSV export, full API integration, and tests will be implemented in later phases.
