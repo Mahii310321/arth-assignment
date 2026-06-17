@@ -2,13 +2,13 @@ import React from "react";
 import { Bell, LogIn, LogOut, Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { authedUser, navItems, user } from "@/data/mockData";
+import { navItems, user } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-function Sidebar({ active, onSelect, isAuthed, onLoginClick, onLogout }) {
+function Sidebar({ active, currentUser, onSelect, isAuthed, onLoginClick, onLogout }) {
   const { theme, toggle } = useTheme();
-  const visibleUser = isAuthed ? authedUser : user;
+  const visibleUser = isAuthed ? currentUser : user;
 
   return (
     <aside className="flex h-full w-full animate-[slide-in_.4s_ease-out] flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)]">

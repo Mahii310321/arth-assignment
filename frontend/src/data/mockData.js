@@ -15,6 +15,7 @@ import {
   Zap
 } from "lucide-react";
 
+// Temporary UI data for the static/mock phases. Dashboard API responses replace this in Phase 6.
 export const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, key: "dashboard" },
   { label: "Expenses", icon: Receipt, key: "expenses" },
@@ -39,6 +40,25 @@ export const authedUser = {
   avatar:
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces"
 };
+
+export const mockUsers = [
+  {
+    name: "Hi, User",
+    email: "user@gmail.com",
+    password: "Password@123",
+    notifications: 9,
+    avatar:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces"
+  },
+  {
+    name: "Samantha",
+    email: "samantha@email.com",
+    password: "Password@123",
+    notifications: 4,
+    avatar:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces"
+  }
+];
 
 export const teamMembers = [
   "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=faces",

@@ -5,15 +5,15 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 import LoginDialog from "@/components/dashboard/LoginDialog";
 import Sidebar from "@/components/dashboard/Sidebar";
 import StatsPanel from "@/components/dashboard/StatsPanel";
-import { authedUser, user } from "@/data/mockData";
+import { user } from "@/data/mockData";
 import { useAuth } from "@/hooks/useAuth";
 
 function App() {
   const [active, setActive] = useState("expenses");
   const [loginOpen, setLoginOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const { isAuthed, login, logout } = useAuth();
-  const visibleUser = isAuthed ? authedUser : user;
+  const { currentUser, isAuthed, login, logout } = useAuth();
+  const visibleUser = isAuthed ? currentUser : user;
 
   function handleSelect(key) {
     setActive(key);
@@ -70,6 +70,7 @@ function App() {
             </button>
             <Sidebar
               active={active}
+              currentUser={currentUser}
               onSelect={handleSelect}
               isAuthed={isAuthed}
               onLoginClick={handleMobileLogin}
@@ -86,6 +87,7 @@ function App() {
         <div className="hidden lg:flex lg:h-full lg:w-[280px] lg:shrink-0 xl:w-[360px]">
           <Sidebar
             active={active}
+            currentUser={currentUser}
             onSelect={setActive}
             isAuthed={isAuthed}
             onLoginClick={() => setLoginOpen(true)}

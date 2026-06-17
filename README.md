@@ -18,6 +18,7 @@ Frontend:
 - React + Vite
 - Tailwind CSS
 - shadcn/ui-compatible component setup
+- React Hook Form + Zod
 - Axios
 
 Backend:
@@ -70,7 +71,7 @@ http://localhost:5173
 
 ## Current Phase
 
-Phase 2 UI has been upgraded with the Lovable reference: responsive dashboard shell, sidebar navigation, expense chart, transactions, spend statistics, tips card, mock login/register modal, persistent mock login state, and dark mode toggle.
+Phase 3 is complete: responsive dashboard UI, mock login/register modal, form validation, loading/error states, persistent mock login state, dynamic user display after login, logout, and dark mode toggle.
 
 ## Future Phases
 

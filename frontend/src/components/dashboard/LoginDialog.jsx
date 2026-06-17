@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Flame } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,59 +14,87 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { mockUsers } from "@/data/mockData";
+
+const loginSchema = z.object({
+  email: z.string().trim().email("Enter a valid email."),
+  password: z.string().min(1, "Password is required.")
+});
+
+const registerSchema = z.object({
+  name: z.string().trim().min(2, "Name is required."),
+  email: z.string().trim().email("Enter a valid email."),
+  password: z
+    .string()
+    .min(8, "Use at least 8 characters.")
+    .regex(/[A-Z]/, "Add one uppercase letter.")
+    .regex(/[a-z]/, "Add one lowercase letter.")
+    .regex(/[0-9]/, "Add one number.")
+    .regex(/[^A-Za-z0-9]/, "Add one special character.")
+});
 
 function LoginDialog({ open, onOpenChange, onLogin }) {
   const [mode, setMode] = useState("login");
-  const [values, setValues] = useState({ name: "", email: "", password: "" });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const schema = useMemo(() => (mode === "login" ? loginSchema : registerSchema), [mode]);
+  const {
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+    reset,
+    setError
+  } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: ""
+    }
+  });
 
   function switchMode(nextMode) {
     setMode(nextMode);
-    setErrors({});
-    setValues({ name: "", email: "", password: "" });
+    reset();
   }
 
-  function updateValue(event) {
-    setValues((current) => ({ ...current, [event.target.name]: event.target.value }));
+  function buildRegisteredProfile(values) {
+    return {
+      name: values.name.trim(),
+      email: values.email.trim().toLowerCase(),
+      notifications: 1,
+      avatar:
+        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces"
+    };
   }
 
-  function validate() {
-    const nextErrors = {};
-    if (mode === "register" && values.name.trim().length < 2) {
-      nextErrors.name = "Name is required.";
-    }
-    if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-      nextErrors.email = "Enter a valid email.";
-    }
-    if (mode === "login" && !values.password) {
-      nextErrors.password = "Password is required.";
-    }
-    if (mode === "register") {
-      if (values.password.length < 8) nextErrors.password = "Use at least 8 characters.";
-      else if (!/[A-Z]/.test(values.password)) nextErrors.password = "Add one uppercase letter.";
-      else if (!/[a-z]/.test(values.password)) nextErrors.password = "Add one lowercase letter.";
-      else if (!/[0-9]/.test(values.password)) nextErrors.password = "Add one number.";
-      else if (!/[^A-Za-z0-9]/.test(values.password)) {
-        nextErrors.password = "Add one special character.";
-      }
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+  function findMockUser(values) {
+    return mockUsers.find(
+      (candidate) =>
+        candidate.email.toLowerCase() === values.email.trim().toLowerCase() &&
+        candidate.password === values.password
+    );
   }
 
-  async function submit(event) {
-    event.preventDefault();
-    if (!validate()) return;
-
-    setIsSubmitting(true);
+  async function submit(values) {
     await new Promise((resolve) => setTimeout(resolve, 450));
-    onLogin();
+
+    if (mode === "login") {
+      const matchedUser = findMockUser(values);
+
+      if (!matchedUser) {
+        setError("root", {
+          message: "Invalid email or password."
+        });
+        return;
+      }
+
+      const { password, ...profile } = matchedUser;
+      onLogin(profile);
+    } else {
+      onLogin(buildRegisteredProfile(values));
+    }
+
     onOpenChange(false);
-    setValues({ name: "", email: "", password: "" });
-    setErrors({});
-    setIsSubmitting(false);
+    reset();
   }
 
   return (
@@ -96,7 +127,16 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
           ))}
         </div>
 
-        <form onSubmit={submit} className="space-y-5">
+        <form onSubmit={handleSubmit(submit)} className="space-y-5">
+          {errors.root && (
+            <div
+              role="alert"
+              className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700"
+            >
+              {errors.root.message}
+            </div>
+          )}
+
           {mode === "register" && (
             <div className="space-y-1">
               <Label htmlFor="name" className="text-xs font-semibold uppercase text-slate-500">
@@ -104,12 +144,11 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
               </Label>
               <Input
                 id="name"
-                name="name"
-                value={values.name}
-                onChange={updateValue}
+                {...register("name")}
+                aria-invalid={Boolean(errors.name)}
                 className="rounded-none border-0 border-b border-slate-300 bg-transparent px-0 text-slate-900 shadow-none focus-visible:border-slate-900 focus-visible:ring-0"
               />
-              {errors.name && <p className="text-xs text-rose-600">{errors.name}</p>}
+              {errors.name && <p className="text-xs text-rose-600">{errors.name.message}</p>}
             </div>
           )}
 
@@ -120,12 +159,11 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
             <Input
               id="email"
               type="email"
-              name="email"
-              value={values.email}
-              onChange={updateValue}
+              {...register("email")}
+              aria-invalid={Boolean(errors.email)}
               className="rounded-none border-0 border-b border-slate-300 bg-transparent px-0 text-slate-900 shadow-none focus-visible:border-slate-900 focus-visible:ring-0"
             />
-            {errors.email && <p className="text-xs text-rose-600">{errors.email}</p>}
+            {errors.email && <p className="text-xs text-rose-600">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1">
@@ -135,12 +173,13 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
             <Input
               id="password"
               type="password"
-              name="password"
-              value={values.password}
-              onChange={updateValue}
+              {...register("password")}
+              aria-invalid={Boolean(errors.password)}
               className="rounded-none border-0 border-b border-slate-300 bg-transparent px-0 text-slate-900 shadow-none focus-visible:border-slate-900 focus-visible:ring-0"
             />
-            {errors.password && <p className="text-xs text-rose-600">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-xs text-rose-600">{errors.password.message}</p>
+            )}
           </div>
 
           {mode === "login" && (
@@ -152,7 +191,7 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-12 w-full rounded-md bg-slate-800 text-base font-semibold text-white hover:bg-slate-900"
+            className="h-12 w-full rounded-md bg-slate-800 text-base font-semibold text-white hover:bg-slate-900 disabled:opacity-70"
           >
             {isSubmitting ? "Please wait..." : mode === "login" ? "Enter" : "Create Account"}
           </Button>
