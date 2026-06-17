@@ -8,7 +8,7 @@ function ExpensesChart() {
   return (
     <div
       aria-label="Expense chart for March 1 through March 25"
-      className="flex h-[180px] w-full animate-[fade-up_.45s_ease-out] items-end gap-2"
+      className="flex h-[150px] w-full animate-[fade-up_.45s_ease-out] items-end gap-1 sm:h-[180px] sm:gap-2"
     >
       {chartData.map((item) => (
         <div key={item.day} className="group relative flex h-full flex-1 items-end">
@@ -18,7 +18,7 @@ function ExpensesChart() {
             Day {item.day}: Rp {(item.amount * 1000).toLocaleString("id-ID")}
           </span>
           <span
-            className="w-full min-w-[7px] rounded-md transition group-hover:scale-y-105"
+            className="w-full min-w-[4px] rounded-md transition group-hover:scale-y-105 sm:min-w-[7px]"
             style={{
               height: `${Math.max(18, (item.amount / maxAmount) * 100)}%`,
               background: item.highlight ? "var(--chart-accent)" : "var(--chart-muted)"

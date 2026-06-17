@@ -7,11 +7,13 @@ import { teamMembers } from "@/data/mockData";
 
 function DashboardContent() {
   return (
-    <section className="flex-1 overflow-y-auto bg-[var(--content-bg)] p-8 lg:p-12 xl:p-[60px]">
-      <header className="grid animate-[fade-in_.35s_ease-out] grid-cols-[minmax(0,1fr)_auto] items-start gap-6">
+    <section className="flex-1 overflow-y-auto bg-[var(--content-bg)] p-5 sm:p-8 lg:p-12 xl:p-[60px]">
+      <header className="grid animate-[fade-in_.35s_ease-out] grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-6">
         <div className="min-w-0">
-          <h1 className="text-5xl font-black text-[var(--content-fg)]">Expenses</h1>
-          <p className="mt-3 text-sm font-medium text-[var(--muted-fg)]">
+          <h1 className="truncate text-3xl font-black text-[var(--content-fg)] sm:text-4xl lg:text-5xl">
+            Expenses
+          </h1>
+          <p className="mt-2 text-sm font-medium text-[var(--muted-fg)] sm:mt-3">
             01 - 25 March, 2020
           </p>
         </div>
@@ -37,11 +39,11 @@ function DashboardContent() {
         </div>
       </header>
 
-      <div className="mt-10">
+      <div className="mt-8 sm:mt-10">
         <ExpensesChart />
       </div>
 
-      <div className="mt-10">
+      <div className="mt-8 sm:mt-10">
         <TransactionList />
       </div>
     </section>

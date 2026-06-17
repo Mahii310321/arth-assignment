@@ -13,7 +13,7 @@ function Group({ title, items, delay = 0 }) {
       <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-3">
         <h3
           id={title.toLowerCase().replaceAll(" ", "-")}
-          className="text-lg font-bold text-[var(--panel-fg)]"
+          className="text-base font-bold text-[var(--panel-fg)] sm:text-lg"
         >
           {title}
         </h3>
@@ -35,22 +35,22 @@ function Group({ title, items, delay = 0 }) {
               key={transaction.id}
               style={{ animationDelay: `${delay + index * 0.08}s` }}
               title={`${transaction.title}: ${formatAmount(transaction.amount)}`}
-              className="group flex animate-[slide-in_.35s_ease-out_both] items-center gap-4 py-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
+              className="group flex animate-[slide-in_.35s_ease-out_both] items-center gap-3 py-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.03] sm:gap-4"
             >
               <div
-                className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-white ${category.bg} transition group-hover:scale-110`}
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-white sm:h-12 sm:w-12 ${category.bg} transition group-hover:scale-110`}
               >
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-bold text-[var(--panel-fg)]">
+                <p className="truncate text-sm font-bold text-[var(--panel-fg)] sm:text-base">
                   {transaction.title}
                 </p>
-                <p className="truncate text-sm text-[var(--muted-fg)]">
+                <p className="truncate text-xs text-[var(--muted-fg)] sm:text-sm">
                   {transaction.time} <span className="px-1">•</span> {transaction.note}
                 </p>
               </div>
-              <p className="shrink-0 text-base font-bold tabular-nums text-[var(--panel-fg)]">
+              <p className="shrink-0 text-sm font-bold tabular-nums text-[var(--panel-fg)] sm:text-base">
                 {formatAmount(transaction.amount)}
               </p>
             </li>

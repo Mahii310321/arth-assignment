@@ -11,8 +11,8 @@ function Sidebar({ active, onSelect, isAuthed, onLoginClick, onLogout }) {
   const visibleUser = isAuthed ? authedUser : user;
 
   return (
-    <aside className="flex w-full animate-[slide-in_.4s_ease-out] flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)] lg:h-full lg:w-[300px] lg:shrink-0 xl:w-[360px]">
-      <div className="px-8 pb-8 pt-10 xl:px-20 xl:pt-20">
+    <aside className="flex h-full w-full animate-[slide-in_.4s_ease-out] flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)]">
+      <div className="px-8 pb-8 pt-10 lg:pt-12 xl:px-20 xl:pt-20">
         <div className="relative inline-block">
           <img
             src={visibleUser.avatar}
@@ -25,12 +25,14 @@ function Sidebar({ active, onSelect, isAuthed, onLoginClick, onLogout }) {
           </span>
           <Bell className="sr-only" />
         </div>
-        <h2 className="mt-7 text-4xl font-bold">{visibleUser.name}</h2>
-        <p className="mt-3 text-lg font-medium text-white/40">{visibleUser.email}</p>
+        <h2 className="mt-5 text-3xl font-bold">{visibleUser.name}</h2>
+        <p className="mt-2 text-sm font-medium text-white/40 xl:text-base">
+          {visibleUser.email}
+        </p>
       </div>
 
-      <nav className="flex-1 px-4 pt-4 xl:px-16 xl:pt-16" aria-label="Dashboard navigation">
-        <ul className="space-y-2">
+      <nav className="flex-1 px-4 pt-6 xl:px-16 xl:pt-16" aria-label="Dashboard navigation">
+        <ul className="space-y-1 xl:space-y-2">
           {navItems.map((item, index) => {
             const isActive = active === item.key;
             const Icon = item.icon;
@@ -44,7 +46,7 @@ function Sidebar({ active, onSelect, isAuthed, onLoginClick, onLogout }) {
                 <button
                   onClick={() => onSelect(item.key)}
                   className={cn(
-                    "group flex w-full items-center gap-4 rounded-xl px-4 py-4 text-xl font-semibold transition-all",
+                    "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-lg font-semibold transition-all xl:gap-4 xl:py-4 xl:text-xl",
                     isActive
                       ? "bg-white/5 text-white"
                       : "text-white/35 hover:bg-white/[0.03] hover:text-white/80"

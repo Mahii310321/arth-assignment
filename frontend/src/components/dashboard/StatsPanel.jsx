@@ -44,16 +44,18 @@ function TipsGraphic() {
 
 function StatsPanel() {
   return (
-    <aside className="flex w-full shrink-0 animate-[fade-in_.4s_ease-out] flex-col gap-8 bg-[var(--panel-bg)] p-8 lg:w-[340px] xl:w-[350px] xl:p-[50px]">
-      <h3 className="text-2xl font-bold text-[var(--panel-fg)]">Where your money go?</h3>
+    <aside className="flex w-full shrink-0 animate-[fade-in_.4s_ease-out] flex-col gap-7 bg-[var(--panel-bg)] p-5 sm:p-8 xl:w-[350px] xl:gap-8 xl:p-[50px]">
+      <h3 className="text-xl font-bold text-[var(--panel-fg)] sm:text-2xl">
+        Where your money go?
+      </h3>
 
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {spendStats.map((stat, index) => (
           <StatRow key={stat.label} stat={stat} index={index} />
         ))}
       </div>
 
-      <div className="mt-auto animate-[fade-up_.45s_ease-out] rounded-2xl bg-[var(--tip-bg)] p-7 shadow-sm">
+      <div className="mt-auto animate-[fade-up_.45s_ease-out] rounded-2xl bg-[var(--tip-bg)] p-6 shadow-sm sm:p-7">
         <TipsGraphic />
         <h4 className="text-xl font-bold text-[var(--panel-fg)]">Save more money</h4>
         <p className="mt-3 text-sm leading-relaxed text-[var(--muted-fg)]">
