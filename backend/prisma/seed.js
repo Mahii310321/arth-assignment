@@ -37,6 +37,20 @@ const transactions = [
   ["Groceries", "grocery", -184000, "expense", "2020-03-07T16:00:00.000Z", "Weekly supplies", "shopping-cart"]
 ];
 
+const userTransactions = [
+  ["Office Lunch", "food", -82000, "expense", "2020-03-25T13:10:00.000Z", "Cafe Central", "utensils"],
+  ["Metro Card", "transportation", -50000, "expense", "2020-03-24T09:20:00.000Z", "Transit recharge", "bus"],
+  ["Internet Bill", "housing", -125000, "expense", "2020-03-23T10:00:00.000Z", "Monthly broadband", "zap"],
+  ["Sneakers", "shopping", -690000, "expense", "2020-03-22T16:40:00.000Z", "Sports store", "shopping-bag"],
+  ["Movie Night", "entertainment", -76000, "expense", "2020-03-21T20:15:00.000Z", "Cinema tickets", "play"],
+  ["Fuel", "vehicle", -210000, "expense", "2020-03-20T08:50:00.000Z", "Petrol station", "car"],
+  ["Coffee", "food", -24000, "expense", "2020-03-19T08:30:00.000Z", "Morning coffee", "coffee"],
+  ["Freelance", "income", 1850000, "income", "2020-03-18T11:00:00.000Z", "Design project", "wallet"],
+  ["Groceries", "grocery", -245000, "expense", "2020-03-17T18:45:00.000Z", "Weekly grocery", "shopping-cart"],
+  ["Cab Ride", "transportation", -64000, "expense", "2020-03-16T22:30:00.000Z", "Airport ride", "bus"],
+  ["Electricity", "housing", -97000, "expense", "2020-03-15T12:00:00.000Z", "Power bill", "zap"]
+];
+
 const spendCategories = [
   ["Food and Drinks", 872400, 28, "#31bca3"],
   ["Shopping", 1378200, 44, "#31bca3"],
@@ -44,6 +58,42 @@ const spendCategories = [
   ["Transportation", 420700, 14, "#31bca3"],
   ["Vehicle", 520000, 17, "#31bca3"]
 ];
+
+const userSpendCategories = [
+  ["Shopping", 690000, 35, "#31bca3"],
+  ["Food and Drinks", 351000, 18, "#31bca3"],
+  ["Transportation", 114000, 12, "#31bca3"],
+  ["Housing", 222000, 20, "#31bca3"],
+  ["Vehicle", 210000, 15, "#31bca3"]
+];
+
+async function seedDashboardData(userId, transactionRows, spendCategoryRows) {
+  await prisma.transaction.deleteMany({ where: { userId } });
+  await prisma.spendCategory.deleteMany({ where: { userId } });
+
+  await prisma.transaction.createMany({
+    data: transactionRows.map(([title, category, amount, type, date, merchant, icon]) => ({
+      userId,
+      title,
+      category,
+      amount,
+      type,
+      date: new Date(date),
+      merchant,
+      icon
+    }))
+  });
+
+  await prisma.spendCategory.createMany({
+    data: spendCategoryRows.map(([name, amount, percentage, color]) => ({
+      userId,
+      name,
+      amount,
+      percentage,
+      color
+    }))
+  });
+}
 
 async function main() {
   const passwordHash = await bcrypt.hash(demoUser.password, 12);
@@ -63,35 +113,11 @@ async function main() {
     }
   });
 
-  await prisma.transaction.deleteMany({ where: { userId: user.id } });
-  await prisma.spendCategory.deleteMany({ where: { userId: user.id } });
-
-  await prisma.transaction.createMany({
-    data: transactions.map(([title, category, amount, type, date, merchant, icon]) => ({
-      userId: user.id,
-      title,
-      category,
-      amount,
-      type,
-      date: new Date(date),
-      merchant,
-      icon
-    }))
-  });
-
-  await prisma.spendCategory.createMany({
-    data: spendCategories.map(([name, amount, percentage, color]) => ({
-      userId: user.id,
-      name,
-      amount,
-      percentage,
-      color
-    }))
-  });
+  await seedDashboardData(user.id, transactions, spendCategories);
 
   for (const extraUser of extraDemoUsers) {
     const extraPasswordHash = await bcrypt.hash(extraUser.password, 12);
-    await prisma.user.upsert({
+    const createdExtraUser = await prisma.user.upsert({
       where: { email: extraUser.email },
       update: {
         name: extraUser.name,
@@ -105,6 +131,8 @@ async function main() {
         profileImageUrl: extraUser.profileImageUrl
       }
     });
+
+    await seedDashboardData(createdExtraUser.id, userTransactions, userSpendCategories);
   }
 
   console.log(`Seeded demo user ${demoUser.email} with password ${demoUser.password}`);
