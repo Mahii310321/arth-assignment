@@ -1,107 +1,156 @@
 # Dashboard Assignment
 
-Technical-round full-stack dashboard assignment built as a JavaScript monorepo.
+Full-stack dashboard assignment built with React, Express, Prisma, PostgreSQL, JWT auth, Docker, and a Postman collection.
 
-## Structure
+## Features
+
+- Figma-style responsive dashboard UI
+- Login/register modal with frontend and backend validation
+- Strong password validation
+- JWT authentication with persistent login
+- Logout with token/session invalidation
+- User-specific dashboard API data
+- Paginated transactions with `Load More`
+- Dynamic spend statistics chart from API data
+- CSV export for transactions
+- Dark mode toggle
+- Loading skeletons, hover states, and API error UI
+- Dockerized backend + PostgreSQL
+
+## Project Structure
 
 ```txt
 dashboard-assignment/
-  frontend/
-  backend/
-  README.md
+  backend/     Express + Prisma API
+  frontend/    React + Vite dashboard
+  docs/        Postman collection
+  docker-compose.yml
 ```
 
-## Tech Stack
+## Requirements
 
-Frontend:
+- Node.js 20+ recommended
+- npm
+- Docker Desktop or compatible Docker runtime
+- `docker-compose` or `docker compose`
 
-- React + Vite
-- Tailwind CSS
-- shadcn/ui-compatible component setup
-- React Hook Form + Zod
-- Axios
+## Quick Start
 
-Backend:
-
-- Node.js + Express
-- CORS
-- dotenv
-- PostgreSQL + Prisma ORM
-- JWT authentication
-- bcrypt password hashing
-- Zod validation
-- express-rate-limit
-
-## Phase 1 Setup
-
-Install dependencies separately:
+Install dependencies:
 
 ```bash
 npm install
-npm install --prefix frontend
 npm install --prefix backend
+npm install --prefix frontend
 ```
 
-Create environment files:
-
-```bash
-cp frontend/.env.example frontend/.env
-cp backend/.env.example backend/.env
-```
-
-Update `backend/.env` with your PostgreSQL `DATABASE_URL` and `JWT_SECRET`.
-Update `frontend/.env` if your backend does not run on `http://localhost:4000`.
-
-Start the backend and local PostgreSQL database together.
-
-On this machine, use:
+Start PostgreSQL and backend with Docker:
 
 ```bash
 npm run docker:up
 ```
 
-or:
+In another terminal, start the frontend:
 
 ```bash
-docker-compose up --build
-```
-
-If your Docker installation supports the newer Compose plugin, this also works:
-
-```bash
-docker compose up --build
-```
-
-The backend container runs on `http://localhost:4000`, waits for Postgres, applies the Prisma schema with `prisma db push`, and seeds the demo data automatically.
-
-Run both apps from the project root:
-
-```bash
-npm run dev
-```
-
-Or run them independently:
-
-```bash
-npm run dev:backend
 npm run dev:frontend
 ```
 
-Backend health endpoint:
+Open:
 
 ```txt
-GET http://localhost:4000/health
+http://localhost:5173
 ```
 
-Run Prisma after configuring `DATABASE_URL`:
+Backend health check:
+
+```txt
+http://localhost:4000/health
+```
+
+The backend container automatically:
+
+- waits for PostgreSQL
+- runs `prisma db push`
+- seeds demo data
+- starts the API on port `4000`
+
+## Demo Login
+
+```txt
+Email: samantha@email.com
+Password: Password@123
+```
+
+Additional seeded user:
+
+```txt
+Email: user@gmail.com
+Password: Password@123
+```
+
+## Environment Variables
+
+The repo includes examples only. Real `.env` files are ignored by git.
+
+For normal Docker usage, no env file is required because `docker-compose.yml` includes local defaults. To customize Docker values:
+
+```bash
+cp .env.example .env
+```
+
+For running the backend directly on your machine:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+For frontend API URL customization:
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+### What is `JWT_SECRET`?
+
+`JWT_SECRET` is not a user token. It is the private server-side signing secret used by the backend to create and verify JWT tokens when users log in.
+
+Users receive a JWT token after login. The backend uses `JWT_SECRET` to sign that token and later verify that it is valid.
+
+For local development, the included example secret is fine. For production, replace it with a long random string and never commit it.
+
+Example:
+
+```txt
+JWT_SECRET=dashboard-assignment-local-jwt-secret-change-for-production
+```
+
+## Local Development Without Docker Backend
+
+If you want to run the backend directly on your machine, first make sure PostgreSQL is running locally and `backend/.env` has:
+
+```txt
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/dashboard_assignment?schema=public"
+```
+
+Then run:
 
 ```bash
 npm run prisma:generate --prefix backend
 npm run prisma:migrate --prefix backend
 npm run seed --prefix backend
+npm run dev:backend
 ```
 
-Auth endpoints:
+Run frontend:
+
+```bash
+npm run dev:frontend
+```
+
+## API Endpoints
+
+Auth:
 
 ```txt
 POST /api/auth/register
@@ -110,7 +159,7 @@ POST /api/auth/logout
 GET  /api/auth/me
 ```
 
-Dashboard endpoints:
+Dashboard:
 
 ```txt
 GET /api/dashboard
@@ -118,24 +167,56 @@ GET /api/transactions?page=1&limit=10
 GET /api/export/transactions.csv
 ```
 
-Postman collection:
+Authenticated endpoints require:
+
+```txt
+Authorization: Bearer <token>
+```
+
+## Postman
+
+Import:
 
 ```txt
 docs/postman/dashboard-assignment.postman_collection.json
 ```
 
-Import it into Postman after the backend is running. The collection uses `baseUrl=http://localhost:4000` and automatically stores the JWT token after register/login. Seeded demo credentials are `samantha@email.com` / `Password@123`. The seed also creates `user@gmail.com` / `Password@123` for convenience.
-
-Frontend dev server:
+The collection uses:
 
 ```txt
-http://localhost:5173
+baseUrl=http://localhost:4000
 ```
 
-## Current Phase
+It stores the JWT after register/login and reuses it for authenticated requests.
 
-Phase 7 is complete: CSV export is available from backend and frontend, transaction/spend hover tooltips were added, dashboard interactions have polished loading/error states, and responsive/dark-mode UI behavior has been refined.
+## Useful Scripts
 
-## Future Phases
+Root:
 
-Tests, API documentation polish, accessibility review, and final README screenshots/assumptions will be implemented in later phases.
+```bash
+npm run docker:up      # start backend + postgres
+npm run docker:down    # stop backend + postgres
+npm run dev            # run backend and frontend locally
+npm run dev:backend
+npm run dev:frontend
+```
+
+Frontend:
+
+```bash
+npm run build --prefix frontend
+```
+
+Backend checks:
+
+```bash
+node --check backend/src/server.js
+```
+
+## Notes for Reviewers
+
+- Backend and database are reproducible through Docker Compose.
+- Demo data is seeded automatically by the backend Docker entrypoint.
+- Frontend runs separately with Vite on `http://localhost:5173`.
+- `.env` files are intentionally ignored. Use the included `.env.example` files for local setup.
+- CSV export is implemented. PDF export and automated tests are not included yet.
