@@ -1,6 +1,10 @@
 import cors from "cors";
 import express from "express";
 
+import authRoutes from "./routes/authRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import { HttpError } from "./lib/httpError.js";
+
 const app = express();
 
 app.use(
@@ -19,9 +23,27 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.use("/api/auth", authRoutes);
+app.use("/api", dashboardRoutes);
+
 app.use((req, res) => {
   res.status(404).json({
     message: "Route not found"
+  });
+});
+
+app.use((error, req, res, next) => {
+  if (error instanceof HttpError) {
+    return res.status(error.statusCode).json({
+      message: error.message,
+      details: error.details
+    });
+  }
+
+  console.error(error);
+
+  return res.status(500).json({
+    message: "Internal server error."
   });
 });
 

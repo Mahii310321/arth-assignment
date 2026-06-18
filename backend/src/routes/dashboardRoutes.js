@@ -1,0 +1,124 @@
+import express from "express";
+
+import { requireAuth } from "../middleware/auth.js";
+import { prisma } from "../lib/prisma.js";
+
+const router = express.Router();
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    profileImageUrl: user.profileImageUrl,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
+  };
+}
+
+function transactionDto(transaction) {
+  return {
+    id: transaction.id,
+    title: transaction.title,
+    category: transaction.category,
+    amount: transaction.amount,
+    type: transaction.type,
+    date: transaction.date,
+    merchant: transaction.merchant,
+    icon: transaction.icon,
+    createdAt: transaction.createdAt,
+    updatedAt: transaction.updatedAt
+  };
+}
+
+function spendCategoryDto(category) {
+  return {
+    id: category.id,
+    name: category.name,
+    amount: category.amount,
+    percentage: category.percentage,
+    color: category.color,
+    createdAt: category.createdAt,
+    updatedAt: category.updatedAt
+  };
+}
+
+function buildChartData(transactions) {
+  const dailySpend = new Map();
+
+  transactions.forEach((transaction) => {
+    if (transaction.type !== "expense") return;
+
+    const day = String(transaction.date.getDate());
+    dailySpend.set(day, (dailySpend.get(day) || 0) + Math.abs(transaction.amount));
+  });
+
+  return Array.from({ length: 25 }, (_, index) => {
+    const day = String(index + 1);
+
+    return {
+      day,
+      amount: dailySpend.get(day) || 0,
+      highlight: day === "24"
+    };
+  });
+}
+
+router.get("/dashboard", requireAuth, async (req, res, next) => {
+  try {
+    const [transactions, spendCategories] = await Promise.all([
+      prisma.transaction.findMany({
+        where: { userId: req.user.id },
+        orderBy: { date: "desc" },
+        take: 25
+      }),
+      prisma.spendCategory.findMany({
+        where: { userId: req.user.id },
+        orderBy: { amount: "desc" }
+      })
+    ]);
+
+    return res.status(200).json({
+      user: publicUser(req.user),
+      recentTransactions: transactions.slice(0, 10).map(transactionDto),
+      spendStatistics: spendCategories.map(spendCategoryDto),
+      chartData: buildChartData(transactions)
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/transactions", requireAuth, async (req, res, next) => {
+  try {
+    const page = Math.max(Number.parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit || "10", 10), 1), 50);
+    const skip = (page - 1) * limit;
+
+    const [total, transactions] = await Promise.all([
+      prisma.transaction.count({
+        where: { userId: req.user.id }
+      }),
+      prisma.transaction.findMany({
+        where: { userId: req.user.id },
+        orderBy: { date: "desc" },
+        skip,
+        take: limit
+      })
+    ]);
+
+    return res.status(200).json({
+      data: transactions.map(transactionDto),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+export default router;
