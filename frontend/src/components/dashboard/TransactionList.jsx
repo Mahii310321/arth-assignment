@@ -35,8 +35,11 @@ function Group({ title, items, delay = 0 }) {
               key={transaction.id}
               style={{ animationDelay: `${delay + index * 0.08}s` }}
               title={`${transaction.title}: ${formatAmount(transaction.amount)}`}
-              className="group flex animate-[slide-in_.35s_ease-out_both] items-center gap-3 py-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.03] sm:gap-4"
+              className="group relative flex animate-[slide-in_.35s_ease-out_both] items-center gap-3 py-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.03] sm:gap-4"
             >
+              <div className="pointer-events-none absolute -top-8 left-14 z-20 hidden max-w-[240px] rounded-md bg-slate-950 px-3 py-2 text-xs font-medium text-white shadow-xl group-hover:block">
+                {transaction.title} • {transaction.note} • {formatAmount(transaction.amount)}
+              </div>
               <div
                 className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-white sm:h-12 sm:w-12 ${category.bg} transition group-hover:scale-110`}
               >

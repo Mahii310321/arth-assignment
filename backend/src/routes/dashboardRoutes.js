@@ -64,6 +64,44 @@ function buildChartData(transactions) {
   });
 }
 
+function escapeCsvValue(value) {
+  if (value === null || value === undefined) return "";
+
+  const stringValue = String(value);
+
+  if (/[",\n]/.test(stringValue)) {
+    return `"${stringValue.replaceAll('"', '""')}"`;
+  }
+
+  return stringValue;
+}
+
+function transactionsToCsv(transactions) {
+  const headers = [
+    "id",
+    "title",
+    "category",
+    "amount",
+    "type",
+    "date",
+    "merchant",
+    "icon",
+    "createdAt",
+    "updatedAt"
+  ];
+
+  const rows = transactions.map((transaction) =>
+    headers
+      .map((header) => {
+        const value = transaction[header];
+        return escapeCsvValue(value instanceof Date ? value.toISOString() : value);
+      })
+      .join(",")
+  );
+
+  return [headers.join(","), ...rows].join("\n");
+}
+
 router.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
     const [transactions, spendCategories] = await Promise.all([
@@ -116,6 +154,24 @@ router.get("/transactions", requireAuth, async (req, res, next) => {
         totalPages: Math.ceil(total / limit)
       }
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/export/transactions.csv", requireAuth, async (req, res, next) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where: { userId: req.user.id },
+      orderBy: { date: "desc" }
+    });
+
+    const csv = transactionsToCsv(transactions);
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=\"transactions.csv\"");
+
+    return res.status(200).send(csv);
   } catch (error) {
     return next(error);
   }

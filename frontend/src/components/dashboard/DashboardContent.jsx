@@ -1,10 +1,11 @@
-import React from "react";
-import { AlertCircle, Plus, RefreshCcw } from "lucide-react";
+import React, { useState } from "react";
+import { AlertCircle, Download, Plus, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import ExpensesChart from "@/components/dashboard/ExpensesChart";
 import TransactionList from "@/components/dashboard/TransactionList";
 import { teamMembers } from "@/data/mockData";
+import { downloadTransactionsCsv } from "@/lib/exportTransactions";
 
 function LoadingRows() {
   return (
@@ -32,6 +33,30 @@ function DashboardContent({
   isLoading,
   onRetry
 }) {
+  const [exportError, setExportError] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+
+  async function handleExport() {
+    if (!isAuthed) {
+      setExportError("Login first to export your transactions.");
+      return;
+    }
+
+    setIsExporting(true);
+    setExportError("");
+
+    try {
+      await downloadTransactionsCsv();
+    } catch (requestError) {
+      setExportError(
+        requestError.response?.data?.message ||
+          "Unable to export transactions. Please try again."
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <section className="flex-1 overflow-y-auto bg-[var(--content-bg)] p-5 sm:p-8 lg:p-12 xl:p-[60px]">
       <header className="grid animate-[fade-in_.35s_ease-out] grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-6">
@@ -62,8 +87,24 @@ function DashboardContent({
           >
             <Plus className="h-4 w-4" />
           </button>
+          <button
+            type="button"
+            aria-label="Export transactions as CSV"
+            title="Export transactions as CSV"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--muted-fg)]/30 text-[var(--muted-fg)] transition hover:border-[var(--content-fg)] hover:text-[var(--content-fg)] disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" />
+          </button>
         </div>
       </header>
+
+      {exportError && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          {exportError}
+        </div>
+      )}
 
       {isCheckingAuth || isLoading ? (
         <LoadingRows />

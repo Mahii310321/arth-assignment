@@ -93,6 +93,7 @@ Dashboard endpoints:
 ```txt
 GET /api/dashboard
 GET /api/transactions?page=1&limit=10
+GET /api/export/transactions.csv
 ```
 
 Postman collection:
@@ -111,8 +112,8 @@ http://localhost:5173
 
 ## Current Phase
 
-Phase 6 is complete: frontend auth is connected to backend login/register/logout/me APIs, JWT is persisted in localStorage, sessions restore on refresh, dashboard data loads from `/api/dashboard`, and API loading/error states are shown in the UI.
+Phase 7 is complete: CSV export is available from backend and frontend, transaction/spend hover tooltips were added, dashboard interactions have polished loading/error states, and responsive/dark-mode UI behavior has been refined.
 
 ## Future Phases
 
-CSV export, advanced UI polish, and tests will be implemented in later phases.
+Tests, API documentation polish, accessibility review, and final README screenshots/assumptions will be implemented in later phases.

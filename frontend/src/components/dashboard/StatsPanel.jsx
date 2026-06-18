@@ -9,9 +9,12 @@ function StatRow({ stat, index }) {
 
   return (
     <div
-      className="animate-[fade-up_.35s_ease-out_both] space-y-3"
+      className="group relative animate-[fade-up_.35s_ease-out_both] space-y-3"
       style={{ animationDelay: `${0.1 + index * 0.06}s` }}
     >
+      <div className="pointer-events-none absolute -top-9 right-0 z-20 hidden rounded-md bg-slate-950 px-3 py-2 text-xs font-medium text-white shadow-xl group-hover:block">
+        {stat.label}: {value.toLocaleString("id-ID")} ({stat.percent ?? stat.percentage}%)
+      </div>
       <div className="flex items-center justify-between gap-4 text-sm">
         <span className="font-bold text-[var(--panel-fg)]">{stat.label}</span>
         <span className="font-semibold tabular-nums text-[var(--panel-fg)]">
