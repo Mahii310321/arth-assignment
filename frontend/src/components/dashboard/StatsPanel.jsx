@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import { spendStats } from "@/data/mockData";
+import { spendStats as fallbackSpendStats } from "@/data/mockData";
 import { useCounter } from "@/hooks/useCounter";
 
 function StatRow({ stat, index }) {
@@ -21,7 +21,11 @@ function StatRow({ stat, index }) {
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--panel-border)]">
         <div
           className="h-full rounded-full bg-emerald-400"
-          style={{ width: `${stat.percent}%`, transition: "width 900ms ease-out" }}
+          style={{
+            width: `${stat.percent ?? stat.percentage}%`,
+            background: stat.color || undefined,
+            transition: "width 900ms ease-out"
+          }}
         />
       </div>
     </div>
@@ -42,7 +46,15 @@ function TipsGraphic() {
   );
 }
 
-function StatsPanel() {
+function StatsPanel({ dashboardData }) {
+  const spendStats =
+    dashboardData?.spendStatistics?.map((stat) => ({
+      label: stat.name,
+      amount: stat.amount,
+      percent: stat.percentage,
+      color: stat.color
+    })) || fallbackSpendStats;
+
   return (
     <aside className="flex w-full shrink-0 animate-[fade-in_.4s_ease-out] flex-col gap-7 bg-[var(--panel-bg)] p-5 sm:p-8 xl:w-[350px] xl:gap-8 xl:p-[50px]">
       <h3 className="text-xl font-bold text-[var(--panel-fg)] sm:text-2xl">

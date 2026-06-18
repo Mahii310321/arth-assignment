@@ -50,6 +50,7 @@ cp backend/.env.example backend/.env
 ```
 
 Update `backend/.env` with your PostgreSQL `DATABASE_URL` and `JWT_SECRET`.
+Update `frontend/.env` if your backend does not run on `http://localhost:4000`.
 
 Run both apps from the project root:
 
@@ -110,8 +111,8 @@ http://localhost:5173
 
 ## Current Phase
 
-Phase 5 is complete: Transaction and SpendCategory Prisma models, seed script, protected dashboard API, protected paginated transactions API, dashboard chart data, spend statistics, and Postman requests for dashboard testing.
+Phase 6 is complete: frontend auth is connected to backend login/register/logout/me APIs, JWT is persisted in localStorage, sessions restore on refresh, dashboard data loads from `/api/dashboard`, and API loading/error states are shown in the UI.
 
 ## Future Phases
 
-CSV export, full frontend/backend integration, and tests will be implemented in later phases.
+CSV export, advanced UI polish, and tests will be implemented in later phases.

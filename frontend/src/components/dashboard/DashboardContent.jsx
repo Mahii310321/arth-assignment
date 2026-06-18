@@ -1,11 +1,37 @@
 import React from "react";
-import { Plus } from "lucide-react";
+import { AlertCircle, Plus, RefreshCcw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import ExpensesChart from "@/components/dashboard/ExpensesChart";
 import TransactionList from "@/components/dashboard/TransactionList";
 import { teamMembers } from "@/data/mockData";
 
-function DashboardContent() {
+function LoadingRows() {
+  return (
+    <div className="mt-8 space-y-4">
+      {[1, 2, 3].map((item) => (
+        <div key={item} className="flex animate-pulse items-center gap-4">
+          <div className="h-11 w-11 rounded-full bg-slate-200 dark:bg-white/10" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-1/3 rounded bg-slate-200 dark:bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-white/10" />
+          </div>
+          <div className="h-4 w-20 rounded bg-slate-200 dark:bg-white/10" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DashboardContent({
+  dashboardData,
+  error,
+  isAuthed,
+  isCheckingAuth,
+  isError,
+  isLoading,
+  onRetry
+}) {
   return (
     <section className="flex-1 overflow-y-auto bg-[var(--content-bg)] p-5 sm:p-8 lg:p-12 xl:p-[60px]">
       <header className="grid animate-[fade-in_.35s_ease-out] grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-6">
@@ -39,13 +65,37 @@ function DashboardContent() {
         </div>
       </header>
 
-      <div className="mt-8 sm:mt-10">
-        <ExpensesChart />
-      </div>
+      {isCheckingAuth || isLoading ? (
+        <LoadingRows />
+      ) : isAuthed && isError ? (
+        <div className="mt-8 rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-800">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+            <div>
+              <p className="font-bold">Could not load dashboard data</p>
+              <p className="mt-1 text-sm">{error}</p>
+              <Button
+                type="button"
+                onClick={onRetry}
+                className="mt-4 h-9 rounded-md bg-rose-700 px-3 text-sm text-white hover:bg-rose-800"
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mt-8 sm:mt-10">
+            <ExpensesChart chartData={dashboardData?.chartData} />
+          </div>
 
-      <div className="mt-8 sm:mt-10">
-        <TransactionList />
-      </div>
+          <div className="mt-8 sm:mt-10">
+            <TransactionList transactions={dashboardData?.recentTransactions} />
+          </div>
+        </>
+      )}
     </section>
   );
 }

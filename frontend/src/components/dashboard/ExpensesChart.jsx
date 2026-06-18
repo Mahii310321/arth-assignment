@@ -1,9 +1,9 @@
 import React from "react";
 
-import { chartData } from "@/data/mockData";
+import { chartData as fallbackChartData } from "@/data/mockData";
 
-function ExpensesChart() {
-  const maxAmount = Math.max(...chartData.map((item) => item.amount));
+function ExpensesChart({ chartData = fallbackChartData }) {
+  const maxAmount = Math.max(...chartData.map((item) => item.amount), 1);
 
   return (
     <div
@@ -15,7 +15,7 @@ function ExpensesChart() {
           <span
             className="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-xs text-white shadow-lg group-hover:block"
           >
-            Day {item.day}: Rp {(item.amount * 1000).toLocaleString("id-ID")}
+            Day {item.day}: Rp {Number(item.amount).toLocaleString("id-ID")}
           </span>
           <span
             className="w-full min-w-[4px] rounded-md transition group-hover:scale-y-105 sm:min-w-[7px]"

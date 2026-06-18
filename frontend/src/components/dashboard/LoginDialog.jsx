@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mockUsers } from "@/data/mockData";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email."),
@@ -33,7 +32,7 @@ const registerSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Add one special character.")
 });
 
-function LoginDialog({ open, onOpenChange, onLogin }) {
+function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
   const [mode, setMode] = useState("login");
   const schema = useMemo(() => (mode === "login" ? loginSchema : registerSchema), [mode]);
   const {
@@ -56,45 +55,30 @@ function LoginDialog({ open, onOpenChange, onLogin }) {
     reset();
   }
 
-  function buildRegisteredProfile(values) {
-    return {
-      name: values.name.trim(),
-      email: values.email.trim().toLowerCase(),
-      notifications: 1,
-      avatar:
-        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces"
-    };
-  }
-
-  function findMockUser(values) {
-    return mockUsers.find(
-      (candidate) =>
-        candidate.email.toLowerCase() === values.email.trim().toLowerCase() &&
-        candidate.password === values.password
-    );
-  }
-
   async function submit(values) {
-    await new Promise((resolve) => setTimeout(resolve, 450));
-
-    if (mode === "login") {
-      const matchedUser = findMockUser(values);
-
-      if (!matchedUser) {
-        setError("root", {
-          message: "Invalid email or password."
+    try {
+      if (mode === "login") {
+        await onLogin({
+          email: values.email,
+          password: values.password
         });
-        return;
+      } else {
+        await onRegister({
+          name: values.name,
+          email: values.email,
+          password: values.password
+        });
       }
 
-      const { password, ...profile } = matchedUser;
-      onLogin(profile);
-    } else {
-      onLogin(buildRegisteredProfile(values));
+      onOpenChange(false);
+      reset();
+    } catch (requestError) {
+      setError("root", {
+        message:
+          requestError.response?.data?.message ||
+          "Unable to authenticate. Please try again."
+      });
     }
-
-    onOpenChange(false);
-    reset();
   }
 
   return (

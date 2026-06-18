@@ -1,7 +1,7 @@
 import React from "react";
 import { MoreHorizontal } from "lucide-react";
 
-import { categoryStyles, transactions } from "@/data/mockData";
+import { categoryStyles, transactions as fallbackTransactions } from "@/data/mockData";
 
 function formatAmount(amount) {
   return `${amount < 0 ? "-" : ""}${Math.abs(amount).toLocaleString("id-ID")}`;
@@ -27,7 +27,7 @@ function Group({ title, items, delay = 0 }) {
 
       <ul className="divide-y divide-[var(--panel-border)]">
         {items.map((transaction, index) => {
-          const category = categoryStyles[transaction.category];
+          const category = categoryStyles[transaction.category] || categoryStyles.grocery;
           const Icon = category.icon;
 
           return (
@@ -61,9 +61,32 @@ function Group({ title, items, delay = 0 }) {
   );
 }
 
-function TransactionList() {
-  const today = transactions.filter((transaction) => transaction.date === "today");
-  const monday = transactions.filter((transaction) => transaction.date === "monday");
+function normalizeTransaction(transaction) {
+  if (transaction.time && transaction.note) {
+    return transaction;
+  }
+
+  const date = new Date(transaction.date);
+
+  const isRecent = date >= new Date("2020-03-23T00:00:00.000Z");
+
+  return {
+    ...transaction,
+    amount: transaction.amount,
+    note: transaction.merchant || transaction.category,
+    time: date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    dateGroup: isRecent ? "today" : "older"
+  };
+}
+
+function TransactionList({ transactions = fallbackTransactions }) {
+  const normalizedTransactions = transactions.map(normalizeTransaction);
+  const today = normalizedTransactions.filter(
+    (transaction) => transaction.date === "today" || transaction.dateGroup === "today"
+  );
+  const monday = normalizedTransactions.filter(
+    (transaction) => transaction.date === "monday" || transaction.dateGroup === "older"
+  );
 
   return (
     <div className="space-y-8">

@@ -7,12 +7,20 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import StatsPanel from "@/components/dashboard/StatsPanel";
 import { user } from "@/data/mockData";
 import { useAuth } from "@/hooks/useAuth";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 function App() {
   const [active, setActive] = useState("expenses");
   const [loginOpen, setLoginOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
-  const { currentUser, isAuthed, login, logout } = useAuth();
+  const { currentUser, isAuthed, isCheckingAuth, login, logout, register } = useAuth();
+  const {
+    data: dashboardData,
+    error: dashboardError,
+    isError: isDashboardError,
+    isLoading: isDashboardLoading,
+    refetch: refetchDashboard
+  } = useDashboardData(isAuthed);
   const visibleUser = isAuthed ? currentUser : user;
 
   function handleSelect(key) {
@@ -96,12 +104,25 @@ function App() {
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden xl:flex-row">
-          <DashboardContent />
-          <StatsPanel />
+          <DashboardContent
+            dashboardData={dashboardData}
+            isAuthed={isAuthed}
+            isCheckingAuth={isCheckingAuth}
+            isError={isDashboardError}
+            isLoading={isDashboardLoading}
+            onRetry={refetchDashboard}
+            error={dashboardError}
+          />
+          <StatsPanel dashboardData={dashboardData} />
         </div>
       </section>
 
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} onLogin={login} />
+      <LoginDialog
+        open={loginOpen}
+        onOpenChange={setLoginOpen}
+        onLogin={login}
+        onRegister={register}
+      />
     </main>
   );
 }
