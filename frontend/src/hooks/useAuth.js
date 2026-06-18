@@ -72,6 +72,7 @@ export function useAuth() {
     const response = await apiClient.post("/api/auth/register", {
       ...values,
       profileImageUrl:
+        values.profileImageUrl ||
         "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces"
     });
     setSession(response.data.token, response.data.user);

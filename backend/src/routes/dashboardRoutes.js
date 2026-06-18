@@ -43,6 +43,18 @@ function spendCategoryDto(category) {
   };
 }
 
+function dashboardCards() {
+  return [
+    {
+      id: "save-more-money",
+      title: "Save more money",
+      description:
+        "Review recurring spending and compare categories before your next purchase.",
+      actionLabel: "VIEW TIPS"
+    }
+  ];
+}
+
 function buildChartData(transactions) {
   const dailySpend = new Map();
 
@@ -104,11 +116,14 @@ function transactionsToCsv(transactions) {
 
 router.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
-    const [transactions, spendCategories] = await Promise.all([
+    const [transactions, totalTransactions, spendCategories] = await Promise.all([
       prisma.transaction.findMany({
         where: { userId: req.user.id },
         orderBy: { date: "desc" },
         take: 25
+      }),
+      prisma.transaction.count({
+        where: { userId: req.user.id }
       }),
       prisma.spendCategory.findMany({
         where: { userId: req.user.id },
@@ -119,8 +134,15 @@ router.get("/dashboard", requireAuth, async (req, res, next) => {
     return res.status(200).json({
       user: publicUser(req.user),
       recentTransactions: transactions.slice(0, 10).map(transactionDto),
+      transactionsPagination: {
+        page: 1,
+        limit: 10,
+        total: totalTransactions,
+        totalPages: Math.ceil(totalTransactions / 10)
+      },
       spendStatistics: spendCategories.map(spendCategoryDto),
-      chartData: buildChartData(transactions)
+      chartData: buildChartData(transactions),
+      cardsData: dashboardCards()
     });
   } catch (error) {
     return next(error);

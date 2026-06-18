@@ -18,12 +18,12 @@ import {
 
 // Fallback/demo UI data. Authenticated dashboard screens use backend API data when available.
 export const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, key: "dashboard" },
-  { label: "Expenses", icon: Receipt, key: "expenses" },
-  { label: "Wallets", icon: Wallet, key: "wallets" },
-  { label: "Summary", icon: PieChart, key: "summary" },
-  { label: "Accounts", icon: CreditCard, key: "accounts" },
-  { label: "Settings", icon: Settings, key: "settings" }
+  { label: "Dashboard", icon: LayoutDashboard, key: "dashboard", path: "/" },
+  { label: "Expenses", icon: Receipt, key: "expenses", path: "/expenses" },
+  { label: "Wallets", icon: Wallet, key: "wallets", path: "/wallets" },
+  { label: "Summary", icon: PieChart, key: "summary", path: "/summary" },
+  { label: "Accounts", icon: CreditCard, key: "accounts", path: "/accounts" },
+  { label: "Settings", icon: Settings, key: "settings", path: "/settings" }
 ];
 
 export const user = {
@@ -154,4 +154,13 @@ export const spendStats = [
   { label: "Housing", amount: 928500, percent: 30 },
   { label: "Transportation", amount: 420700, percent: 14 },
   { label: "Vehicle", amount: 520000, percent: 17 }
+];
+
+export const dashboardCards = [
+  {
+    id: "save-more-money",
+    title: "Save more money",
+    description: "Review recurring spending and compare categories before your next purchase.",
+    actionLabel: "VIEW TIPS"
+  }
 ];

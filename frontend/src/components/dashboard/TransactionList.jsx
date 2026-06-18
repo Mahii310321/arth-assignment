@@ -46,7 +46,7 @@ function Group({ title, items, delay = 0 }) {
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-[var(--panel-fg)] sm:text-base">
+                <p className="font-poppins truncate text-[16px] font-medium leading-none tracking-[0.34px] text-[var(--panel-fg)]">
                   {transaction.title}
                 </p>
                 <p className="truncate text-xs text-[var(--muted-fg)] sm:text-sm">

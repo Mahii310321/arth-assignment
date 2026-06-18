@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dashboard-assignment-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dashboard_assignment
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dashboard_assignment"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dashboard-assignment-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      CLIENT_ORIGIN: http://localhost:5173
+      CLIENT_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dashboard_assignment?schema=public
+      JWT_SECRET: replace-with-a-long-random-secret
+      JWT_EXPIRES_IN: 1d
+    ports:
+      - "4000:4000"
+
+volumes:
+  postgres_data:

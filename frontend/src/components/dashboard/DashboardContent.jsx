@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AlertCircle, Download, Plus, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import ExpensesChart from "@/components/dashboard/ExpensesChart";
 import TransactionList from "@/components/dashboard/TransactionList";
 import { teamMembers } from "@/data/mockData";
+import { apiClient } from "@/lib/apiClient";
 import { downloadTransactionsCsv } from "@/lib/exportTransactions";
 
 function LoadingRows() {
@@ -24,6 +25,23 @@ function LoadingRows() {
   );
 }
 
+function GuestSkeleton() {
+  return (
+    <>
+      <div className="mt-8 flex h-[150px] animate-pulse items-end gap-1 sm:mt-10 sm:h-[180px] sm:gap-2">
+        {Array.from({ length: 25 }, (_, index) => (
+          <span
+            key={index}
+            className="w-full min-w-[4px] rounded-md bg-slate-200 dark:bg-white/10 sm:min-w-[7px]"
+            style={{ height: `${28 + ((index * 17) % 62)}%` }}
+          />
+        ))}
+      </div>
+      <LoadingRows />
+    </>
+  );
+}
+
 function DashboardContent({
   dashboardData,
   error,
@@ -35,6 +53,23 @@ function DashboardContent({
 }) {
   const [exportError, setExportError] = useState("");
   const [isExporting, setIsExporting] = useState(false);
+  const [visibleTransactions, setVisibleTransactions] = useState([]);
+  const [transactionPagination, setTransactionPagination] = useState(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState("");
+
+  useEffect(() => {
+    if (!isAuthed || !dashboardData) {
+      setVisibleTransactions([]);
+      setTransactionPagination(null);
+      setLoadMoreError("");
+      return;
+    }
+
+    setVisibleTransactions(dashboardData.recentTransactions || []);
+    setTransactionPagination(dashboardData.transactionsPagination || null);
+    setLoadMoreError("");
+  }, [dashboardData, isAuthed]);
 
   async function handleExport() {
     if (!isAuthed) {
@@ -57,11 +92,47 @@ function DashboardContent({
     }
   }
 
+  async function handleLoadMoreTransactions() {
+    if (!transactionPagination || isLoadingMore) return;
+
+    const nextPage = transactionPagination.page + 1;
+
+    setIsLoadingMore(true);
+    setLoadMoreError("");
+
+    try {
+      const response = await apiClient.get("/api/transactions", {
+        params: {
+          page: nextPage,
+          limit: transactionPagination.limit
+        }
+      });
+
+      setVisibleTransactions((currentTransactions) => [
+        ...currentTransactions,
+        ...(response.data.data || [])
+      ]);
+      setTransactionPagination(response.data.pagination);
+    } catch (requestError) {
+      setLoadMoreError(
+        requestError.response?.data?.message ||
+          "Unable to load more transactions. Please try again."
+      );
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
+
+  const canLoadMoreTransactions =
+    isAuthed &&
+    transactionPagination &&
+    transactionPagination.page < transactionPagination.totalPages;
+
   return (
-    <section className="flex-1 overflow-y-auto bg-[var(--content-bg)] p-5 sm:p-8 lg:p-12 xl:p-[60px]">
+    <section className="min-h-0 flex-1 overflow-y-auto bg-[var(--content-bg)] p-5 sm:p-8 lg:p-12 xl:p-[60px]">
       <header className="grid animate-[fade-in_.35s_ease-out] grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:gap-6">
         <div className="min-w-0">
-          <h1 className="truncate text-3xl font-black text-[var(--content-fg)] sm:text-4xl lg:text-5xl">
+          <h1 className="font-poppins truncate text-[40px] font-semibold leading-[50px] tracking-[0.67px] text-[var(--content-fg)]">
             Expenses
           </h1>
           <p className="mt-2 text-sm font-medium text-[var(--muted-fg)] sm:mt-3">
@@ -108,6 +179,8 @@ function DashboardContent({
 
       {isCheckingAuth || isLoading ? (
         <LoadingRows />
+      ) : !isAuthed ? (
+        <GuestSkeleton />
       ) : isAuthed && isError ? (
         <div className="mt-8 rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-800">
           <div className="flex items-start gap-3">
@@ -133,7 +206,22 @@ function DashboardContent({
           </div>
 
           <div className="mt-8 sm:mt-10">
-            <TransactionList transactions={dashboardData?.recentTransactions} />
+            <TransactionList transactions={visibleTransactions} />
+            {loadMoreError && (
+              <p className="mt-4 text-sm font-semibold text-rose-600">{loadMoreError}</p>
+            )}
+            {canLoadMoreTransactions && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  type="button"
+                  onClick={handleLoadMoreTransactions}
+                  disabled={isLoadingMore}
+                  className="h-11 rounded-md bg-[var(--sidebar-bg)] px-6 text-sm font-bold text-white hover:bg-[var(--sidebar-bg)]/90 disabled:opacity-60"
+                >
+                  {isLoadingMore ? "Loading..." : "Load More"}
+                </Button>
+              </div>
+            )}
           </div>
         </>
       )}

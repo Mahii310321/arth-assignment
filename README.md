@@ -52,6 +52,28 @@ cp backend/.env.example backend/.env
 Update `backend/.env` with your PostgreSQL `DATABASE_URL` and `JWT_SECRET`.
 Update `frontend/.env` if your backend does not run on `http://localhost:4000`.
 
+Start the backend and local PostgreSQL database together.
+
+On this machine, use:
+
+```bash
+npm run docker:up
+```
+
+or:
+
+```bash
+docker-compose up --build
+```
+
+If your Docker installation supports the newer Compose plugin, this also works:
+
+```bash
+docker compose up --build
+```
+
+The backend container runs on `http://localhost:4000`, waits for Postgres, applies the Prisma schema with `prisma db push`, and seeds the demo data automatically.
+
 Run both apps from the project root:
 
 ```bash
@@ -102,7 +124,7 @@ Postman collection:
 docs/postman/dashboard-assignment.postman_collection.json
 ```
 
-Import it into Postman after the backend is running. The collection uses `baseUrl=http://localhost:4000` and automatically stores the JWT token after register/login. Seeded demo credentials are `samantha@email.com` / `Password@123`.
+Import it into Postman after the backend is running. The collection uses `baseUrl=http://localhost:4000` and automatically stores the JWT token after register/login. Seeded demo credentials are `samantha@email.com` / `Password@123`. The seed also creates `user@gmail.com` / `Password@123` for convenience.
 
 Frontend dev server:
 

@@ -29,7 +29,10 @@ const registerSchema = z.object({
     .regex(/[A-Z]/, "Add one uppercase letter.")
     .regex(/[a-z]/, "Add one lowercase letter.")
     .regex(/[0-9]/, "Add one number.")
-    .regex(/[^A-Za-z0-9]/, "Add one special character.")
+    .regex(/[^A-Za-z0-9]/, "Add one special character."),
+  profileImageUrl: z
+    .union([z.string().trim().url("Enter a valid image URL."), z.literal("")])
+    .optional()
 });
 
 function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
@@ -46,7 +49,8 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
     defaultValues: {
       name: "",
       email: "",
-      password: ""
+      password: "",
+      profileImageUrl: ""
     }
   });
 
@@ -66,7 +70,8 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
         await onRegister({
           name: values.name,
           email: values.email,
-          password: values.password
+          password: values.password,
+          profileImageUrl: values.profileImageUrl || undefined
         });
       }
 
@@ -76,6 +81,9 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
       setError("root", {
         message:
           requestError.response?.data?.message ||
+          (requestError.request
+            ? "Backend is not reachable. Check that Docker backend is running on port 4000."
+            : null) ||
           "Unable to authenticate. Please try again."
       });
     }
@@ -112,6 +120,13 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
         </div>
 
         <form onSubmit={handleSubmit(submit)} className="space-y-5">
+          {mode === "login" && (
+            <div className="rounded-md bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500">
+              Demo login: <span className="text-slate-900">samantha@email.com</span> /{" "}
+              <span className="text-slate-900">Password@123</span>
+            </div>
+          )}
+
           {errors.root && (
             <div
               role="alert"
@@ -133,6 +148,27 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
                 className="rounded-none border-0 border-b border-slate-300 bg-transparent px-0 text-slate-900 shadow-none focus-visible:border-slate-900 focus-visible:ring-0"
               />
               {errors.name && <p className="text-xs text-rose-600">{errors.name.message}</p>}
+            </div>
+          )}
+
+          {mode === "register" && (
+            <div className="space-y-1">
+              <Label
+                htmlFor="profileImageUrl"
+                className="text-xs font-semibold uppercase text-slate-500"
+              >
+                Profile Image URL
+              </Label>
+              <Input
+                id="profileImageUrl"
+                type="url"
+                {...register("profileImageUrl")}
+                aria-invalid={Boolean(errors.profileImageUrl)}
+                className="rounded-none border-0 border-b border-slate-300 bg-transparent px-0 text-slate-900 shadow-none focus-visible:border-slate-900 focus-visible:ring-0"
+              />
+              {errors.profileImageUrl && (
+                <p className="text-xs text-rose-600">{errors.profileImageUrl.message}</p>
+              )}
             </div>
           )}
 

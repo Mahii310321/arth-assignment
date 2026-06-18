@@ -6,34 +6,48 @@ import { navItems, user } from "@/data/mockData";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-function Sidebar({ active, currentUser, onSelect, isAuthed, onLoginClick, onLogout }) {
+function Sidebar({ active, currentUser, onSelect, isAuthed, onLoginClick, onLogout, showSkeleton }) {
   const { theme, toggle } = useTheme();
   const visibleUser = isAuthed ? currentUser : user;
 
   return (
     <aside className="flex h-full w-full animate-[slide-in_.4s_ease-out] flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-fg)]">
       <div className="px-8 pb-8 pt-10 lg:pt-12 xl:px-20 xl:pt-20">
-        <div className="relative inline-block">
-          <img
-            src={visibleUser.avatar}
-            alt={visibleUser.name}
-            loading="lazy"
-            className="h-[88px] w-[88px] rounded-2xl object-cover shadow-lg"
-          />
-          <span className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-lg">
-            {visibleUser.notifications}
-          </span>
-          <Bell className="sr-only" />
-        </div>
-        <h2 className="mt-5 text-3xl font-bold">{visibleUser.name}</h2>
-        <p className="mt-2 text-sm font-medium text-white/40 xl:text-base">
-          {visibleUser.email}
-        </p>
+        {showSkeleton ? (
+          <>
+            <div className="h-[88px] w-[88px] animate-pulse rounded-2xl bg-white/10" />
+            <div className="mt-5 h-8 w-40 animate-pulse rounded-md bg-white/10" />
+            <div className="mt-3 h-4 w-48 animate-pulse rounded-md bg-white/10" />
+          </>
+        ) : (
+          <>
+            <div className="relative inline-block">
+              <img
+                src={visibleUser.avatar}
+                alt={visibleUser.name}
+                loading="lazy"
+                className="h-[88px] w-[88px] rounded-2xl object-cover shadow-lg"
+              />
+              <span className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-sm font-semibold text-white shadow-lg">
+                {visibleUser.notifications}
+              </span>
+              <Bell className="sr-only" />
+            </div>
+            <h2 className="mt-5 text-3xl font-bold">{visibleUser.name}</h2>
+            <p className="mt-2 text-sm font-medium text-white/40 xl:text-base">
+              {visibleUser.email}
+            </p>
+          </>
+        )}
       </div>
 
       <nav className="flex-1 px-4 pt-6 xl:px-16 xl:pt-16" aria-label="Dashboard navigation">
         <ul className="space-y-1 xl:space-y-2">
-          {navItems.map((item, index) => {
+          {showSkeleton ? Array.from({ length: 6 }, (_, index) => (
+            <li key={index} className="px-4 py-3 xl:py-4">
+              <div className="h-6 animate-pulse rounded-md bg-white/10" />
+            </li>
+          )) : navItems.map((item, index) => {
             const isActive = active === item.key;
             const Icon = item.icon;
 
@@ -44,7 +58,7 @@ function Sidebar({ active, currentUser, onSelect, isAuthed, onLoginClick, onLogo
                 className="animate-[slide-in_.35s_ease-out_both]"
               >
                 <button
-                  onClick={() => onSelect(item.key)}
+                  onClick={() => onSelect(item)}
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-lg font-semibold transition-all xl:gap-4 xl:py-4 xl:text-xl",
                     isActive

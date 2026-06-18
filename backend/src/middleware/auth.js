@@ -1,5 +1,6 @@
 import { HttpError } from "../lib/httpError.js";
 import { prisma } from "../lib/prisma.js";
+import { getSession } from "../lib/sessionStore.js";
 import { isTokenBlacklisted } from "../lib/tokenBlacklist.js";
 import { verifyToken } from "../lib/tokens.js";
 
@@ -18,6 +19,11 @@ export async function requireAuth(req, res, next) {
     }
 
     const payload = verifyToken(token);
+    const session = getSession(token);
+
+    if (!session || session.userId !== payload.sub) {
+      throw new HttpError(401, "Session has expired. Please login again.");
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },

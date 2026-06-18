@@ -4,9 +4,9 @@ import rateLimit from "express-rate-limit";
 
 import { requireAuth } from "../middleware/auth.js";
 import { prisma } from "../lib/prisma.js";
+import { createSession, deleteSession } from "../lib/sessionStore.js";
 import { blacklistToken } from "../lib/tokenBlacklist.js";
-import { verifyToken } from "../lib/tokens.js";
-import { signToken } from "../lib/tokens.js";
+import { signToken, verifyToken } from "../lib/tokens.js";
 import { validateBody } from "../middleware/validate.js";
 import { loginSchema, registerSchema } from "../schemas/authSchemas.js";
 
@@ -31,6 +31,16 @@ function publicUser(user) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   };
+}
+
+function storeSession(token, user) {
+  const payload = verifyToken(token);
+
+  createSession(token, {
+    userId: user.id,
+    email: user.email,
+    expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 24 * 60 * 60 * 1000
+  });
 }
 
 router.post("/register", validateBody(registerSchema), async (req, res, next) => {
@@ -58,6 +68,7 @@ router.post("/register", validateBody(registerSchema), async (req, res, next) =>
     });
 
     const token = signToken(user);
+    storeSession(token, user);
 
     return res.status(201).json({
       message: "Registration successful.",
@@ -91,6 +102,7 @@ router.post("/login", loginLimiter, validateBody(loginSchema), async (req, res, 
     }
 
     const token = signToken(user);
+    storeSession(token, user);
 
     return res.status(200).json({
       message: "Login successful.",
@@ -105,6 +117,7 @@ router.post("/login", loginLimiter, validateBody(loginSchema), async (req, res, 
 router.post("/logout", requireAuth, (req, res) => {
   const payload = verifyToken(req.token);
   const expiresAt = payload.exp ? payload.exp * 1000 : Date.now() + 24 * 60 * 60 * 1000;
+  deleteSession(req.token);
   blacklistToken(req.token, expiresAt);
 
   return res.status(200).json({

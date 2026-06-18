@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../src/config/env.js";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
@@ -11,6 +11,16 @@ const demoUser = {
   profileImageUrl:
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces"
 };
+
+const extraDemoUsers = [
+  {
+    name: "Hi, User",
+    email: "user@gmail.com",
+    password: "Password@123",
+    profileImageUrl:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces"
+  }
+];
 
 const transactions = [
   ["Grocery", "grocery", -326800, "expense", "2020-03-24T17:12:00.000Z", "Belanja di pasar", "shopping-cart"],
@@ -79,7 +89,26 @@ async function main() {
     }))
   });
 
+  for (const extraUser of extraDemoUsers) {
+    const extraPasswordHash = await bcrypt.hash(extraUser.password, 12);
+    await prisma.user.upsert({
+      where: { email: extraUser.email },
+      update: {
+        name: extraUser.name,
+        passwordHash: extraPasswordHash,
+        profileImageUrl: extraUser.profileImageUrl
+      },
+      create: {
+        name: extraUser.name,
+        email: extraUser.email,
+        passwordHash: extraPasswordHash,
+        profileImageUrl: extraUser.profileImageUrl
+      }
+    });
+  }
+
   console.log(`Seeded demo user ${demoUser.email} with password ${demoUser.password}`);
+  console.log("Additional demo login: user@gmail.com / Password@123");
 }
 
 main()
