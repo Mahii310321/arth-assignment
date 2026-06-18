@@ -15,7 +15,7 @@ Full-stack dashboard assignment built with React, Express, Prisma, PostgreSQL, J
 - CSV export for transactions
 - Dark mode toggle
 - Loading skeletons, hover states, and API error UI
-- Dockerized backend + PostgreSQL
+- Dockerized frontend + backend + PostgreSQL
 
 ## Project Structure
 
@@ -44,16 +44,10 @@ npm install --prefix backend
 npm install --prefix frontend
 ```
 
-Start PostgreSQL and backend with Docker:
+Start the full app with Docker:
 
 ```bash
 npm run docker:up
-```
-
-In another terminal, start the frontend:
-
-```bash
-npm run dev:frontend
 ```
 
 Open:
@@ -67,6 +61,12 @@ Backend health check:
 ```txt
 http://localhost:4000/health
 ```
+
+Docker starts:
+
+- frontend on `http://localhost:5173`
+- backend on `http://localhost:4000`
+- PostgreSQL on `localhost:5432`
 
 The backend container automatically:
 
@@ -110,6 +110,14 @@ For frontend API URL customization:
 ```bash
 cp frontend/.env.example frontend/.env
 ```
+
+When using Docker, `VITE_API_BASE_URL` is a build argument. The default is:
+
+```txt
+http://localhost:4000
+```
+
+That value is correct because the browser runs on your machine and calls the backend through the published host port.
 
 ### What is `JWT_SECRET`?
 
@@ -194,8 +202,9 @@ It stores the JWT after register/login and reuses it for authenticated requests.
 Root:
 
 ```bash
-npm run docker:up      # start backend + postgres
-npm run docker:down    # stop backend + postgres
+npm run docker:up      # start frontend + backend + postgres
+npm run docker:up:detached
+npm run docker:down    # stop frontend + backend + postgres
 npm run dev            # run backend and frontend locally
 npm run dev:backend
 npm run dev:frontend
@@ -216,7 +225,8 @@ node --check backend/src/server.js
 ## Notes for Reviewers
 
 - Backend and database are reproducible through Docker Compose.
+- Frontend is also containerized and served by Nginx with React Router fallback.
 - Demo data is seeded automatically by the backend Docker entrypoint.
-- Frontend runs separately with Vite on `http://localhost:5173`.
+- Docker starts the full app at `http://localhost:5173`.
 - `.env` files are intentionally ignored. Use the included `.env.example` files for local setup.
 - CSV export is implemented. PDF export and automated tests are not included yet.
