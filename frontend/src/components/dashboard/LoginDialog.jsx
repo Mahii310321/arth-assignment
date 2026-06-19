@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Flame } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,26 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const loginSchema = z.object({
-  email: z.string().trim().email("Enter a valid email."),
-  password: z.string().min(1, "Password is required.")
-});
-
-const registerSchema = z.object({
-  name: z.string().trim().min(2, "Name is required."),
-  email: z.string().trim().email("Enter a valid email."),
-  password: z
-    .string()
-    .min(8, "Use at least 8 characters.")
-    .regex(/[A-Z]/, "Add one uppercase letter.")
-    .regex(/[a-z]/, "Add one lowercase letter.")
-    .regex(/[0-9]/, "Add one number.")
-    .regex(/[^A-Za-z0-9]/, "Add one special character."),
-  profileImageUrl: z
-    .union([z.string().trim().url("Enter a valid image URL."), z.literal("")])
-    .optional()
-});
+import { loginSchema, registerSchema } from "@/lib/authSchemas";
 
 function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
   const [mode, setMode] = useState("login");
@@ -104,11 +84,13 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-6 grid grid-cols-2 rounded-lg bg-slate-100 p-1">
+        <div className="mb-6 grid grid-cols-2 rounded-lg bg-slate-100 p-1" role="tablist">
           {["login", "register"].map((tab) => (
             <button
               key={tab}
               type="button"
+              role="tab"
+              aria-selected={mode === tab}
               onClick={() => switchMode(tab)}
               className={`rounded-md px-3 py-2 text-sm font-semibold capitalize transition ${
                 mode === tab ? "bg-white text-slate-950 shadow-sm" : "text-slate-500"
@@ -130,6 +112,7 @@ function LoginDialog({ open, onOpenChange, onLogin, onRegister }) {
           {errors.root && (
             <div
               role="alert"
+              aria-live="assertive"
               className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700"
             >
               {errors.root.message}

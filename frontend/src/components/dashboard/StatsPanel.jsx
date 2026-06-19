@@ -43,11 +43,13 @@ function TipsGraphic() {
       <img
         src={tipsDrawer}
         alt=""
+        loading="lazy"
         className="absolute left-[25px] top-[19px] h-[72px] w-[84px] object-contain"
       />
       <img
         src={tipsPlant}
         alt=""
+        loading="lazy"
         className="absolute left-[164px] top-0 h-[90px] w-[53px] object-contain"
       />
     </div>

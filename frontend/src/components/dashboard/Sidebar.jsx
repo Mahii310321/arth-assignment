@@ -59,6 +59,7 @@ function Sidebar({ active, currentUser, onSelect, isAuthed, onLoginClick, onLogo
               >
                 <button
                   onClick={() => onSelect(item)}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-lg font-semibold transition-all xl:gap-4 xl:py-4 xl:text-xl",
                     isActive

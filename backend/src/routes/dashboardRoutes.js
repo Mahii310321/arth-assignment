@@ -1,6 +1,6 @@
 import express from "express";
 
-import { requireAuth } from "../middleware/auth.js";
+import { authenticateToken, requireAuth } from "../middleware/auth.js";
 import { prisma } from "../lib/prisma.js";
 
 const router = express.Router();
@@ -76,6 +76,42 @@ function buildChartData(transactions) {
   });
 }
 
+async function getDashboardPayload(user) {
+  const [transactions, totalTransactions, spendCategories] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+      take: 25
+    }),
+    prisma.transaction.count({
+      where: { userId: user.id }
+    }),
+    prisma.spendCategory.findMany({
+      where: { userId: user.id },
+      orderBy: { amount: "desc" }
+    })
+  ]);
+
+  return {
+    user: publicUser(user),
+    recentTransactions: transactions.slice(0, 10).map(transactionDto),
+    transactionsPagination: {
+      page: 1,
+      limit: 10,
+      total: totalTransactions,
+      totalPages: Math.ceil(totalTransactions / 10)
+    },
+    spendStatistics: spendCategories.map(spendCategoryDto),
+    chartData: buildChartData(transactions),
+    cardsData: dashboardCards()
+  };
+}
+
+function sendSseEvent(res, event, data) {
+  res.write(`event: ${event}\n`);
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+}
+
 function escapeCsvValue(value) {
   if (value === null || value === undefined) return "";
 
@@ -116,36 +152,45 @@ function transactionsToCsv(transactions) {
 
 router.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
-    const [transactions, totalTransactions, spendCategories] = await Promise.all([
-      prisma.transaction.findMany({
-        where: { userId: req.user.id },
-        orderBy: { date: "desc" },
-        take: 25
-      }),
-      prisma.transaction.count({
-        where: { userId: req.user.id }
-      }),
-      prisma.spendCategory.findMany({
-        where: { userId: req.user.id },
-        orderBy: { amount: "desc" }
-      })
-    ]);
-
-    return res.status(200).json({
-      user: publicUser(req.user),
-      recentTransactions: transactions.slice(0, 10).map(transactionDto),
-      transactionsPagination: {
-        page: 1,
-        limit: 10,
-        total: totalTransactions,
-        totalPages: Math.ceil(totalTransactions / 10)
-      },
-      spendStatistics: spendCategories.map(spendCategoryDto),
-      chartData: buildChartData(transactions),
-      cardsData: dashboardCards()
-    });
+    return res.status(200).json(await getDashboardPayload(req.user));
   } catch (error) {
     return next(error);
+  }
+});
+
+router.get("/dashboard/stream", async (req, res) => {
+  try {
+    const { user } = await authenticateToken(req.query.token);
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no"
+    });
+    res.flushHeaders?.();
+
+    sendSseEvent(res, "dashboard", await getDashboardPayload(user));
+
+    const interval = setInterval(async () => {
+      try {
+        sendSseEvent(res, "dashboard", await getDashboardPayload(user));
+      } catch (error) {
+        sendSseEvent(res, "error", {
+          message: "Unable to refresh dashboard stream."
+        });
+      }
+    }, 15000);
+
+    req.on("close", () => {
+      clearInterval(interval);
+      res.end();
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 401;
+    res.status(statusCode).json({
+      message: error.message || "Invalid stream token."
+    });
   }
 });
 

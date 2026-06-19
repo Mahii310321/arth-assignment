@@ -13,9 +13,12 @@ Full-stack dashboard assignment built with React, Express, Prisma, PostgreSQL, J
 - Paginated transactions with `Load More`
 - Dynamic spend statistics chart from API data
 - CSV export for transactions
+- Server-Sent Events live dashboard stream
 - Dark mode toggle
 - Loading skeletons, hover states, and API error UI
 - Dockerized frontend + backend + PostgreSQL
+- Automated API and validation tests
+- WCAG 2.1 accessibility review
 
 ## Project Structure
 
@@ -171,6 +174,7 @@ Dashboard:
 
 ```txt
 GET /api/dashboard
+GET /api/dashboard/stream?token=<token>
 GET /api/transactions?page=1&limit=10
 GET /api/export/transactions.csv
 ```
@@ -197,6 +201,48 @@ baseUrl=http://localhost:4000
 
 It stores the JWT after register/login and reuses it for authenticated requests.
 
+The collection covers health, register, login, invalid login, current user, dashboard, transaction pagination, CSV export, SSE stream, and logout.
+
+## Automated Tests
+
+Backend API tests use Node's built-in test runner and exercise the real Express app. They require a reachable PostgreSQL database and a valid `backend/.env` or Docker-provided `DATABASE_URL`.
+
+```bash
+npm run test:backend
+```
+
+Frontend validation tests cover login/register schema behavior:
+
+```bash
+npm run test:frontend
+```
+
+Run all tests:
+
+```bash
+npm test
+```
+
+## Real-Time Updates
+
+The dashboard supports Server-Sent Events:
+
+```txt
+GET /api/dashboard/stream?token=<jwt>
+```
+
+The frontend opens this stream after login and updates dashboard data when `dashboard` events arrive.
+
+## Accessibility
+
+WCAG 2.1 review artifact:
+
+```txt
+docs/accessibility/WCAG-2.1-review.md
+```
+
+The UI includes labels, dialog semantics, alert regions, active nav state, reduced-motion support, skip link, and keyboard-friendly controls.
+
 ## Useful Scripts
 
 Root:
@@ -208,6 +254,7 @@ npm run docker:down    # stop frontend + backend + postgres
 npm run dev            # run backend and frontend locally
 npm run dev:backend
 npm run dev:frontend
+npm test
 ```
 
 Frontend:
@@ -229,4 +276,4 @@ node --check backend/src/server.js
 - Demo data is seeded automatically by the backend Docker entrypoint.
 - Docker starts the full app at `http://localhost:5173`.
 - `.env` files are intentionally ignored. Use the included `.env.example` files for local setup.
-- CSV export is implemented. PDF export and automated tests are not included yet.
+- CSV export is implemented. PDF export is not included.

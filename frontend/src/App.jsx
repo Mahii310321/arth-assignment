@@ -72,6 +72,12 @@ function App() {
 
   return (
     <main className="min-h-screen w-full bg-[var(--app-bg)] lg:h-screen lg:overflow-hidden lg:p-6">
+      <a
+        href="#dashboard-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-slate-950"
+      >
+        Skip to dashboard content
+      </a>
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/5 bg-[var(--sidebar-bg)] px-4 py-3 text-white lg:hidden">
         <div className="flex min-w-0 items-center gap-3">
           {showGuestSkeleton ? (
@@ -149,7 +155,7 @@ function App() {
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden xl:flex-row">
+        <div id="dashboard-content" className="flex min-h-0 flex-1 flex-col overflow-hidden xl:flex-row">
           <Routes>
             <Route path="/" element={<DashboardRoute />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />

@@ -172,7 +172,7 @@ function DashboardContent({
       </header>
 
       {exportError && (
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+        <div role="alert" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
           {exportError}
         </div>
       )}
@@ -182,7 +182,7 @@ function DashboardContent({
       ) : !isAuthed ? (
         <GuestSkeleton />
       ) : isAuthed && isError ? (
-        <div className="mt-8 rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-800">
+        <div role="alert" className="mt-8 rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-800">
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
             <div>
@@ -208,7 +208,7 @@ function DashboardContent({
           <div className="mt-8 sm:mt-10">
             <TransactionList transactions={visibleTransactions} />
             {loadMoreError && (
-              <p className="mt-4 text-sm font-semibold text-rose-600">{loadMoreError}</p>
+              <p role="alert" className="mt-4 text-sm font-semibold text-rose-600">{loadMoreError}</p>
             )}
             {canLoadMoreTransactions && (
               <div className="mt-6 flex justify-center">
